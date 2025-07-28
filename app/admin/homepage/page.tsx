@@ -16,6 +16,7 @@ import {
   RotateCcw,
   AlertTriangle,
   Loader2,
+  Bug,
 } from "lucide-react";
 import { HomepagePreview } from "@/components/admin/homepage-preview";
 import { SectionEditor } from "@/components/admin/section-editor";
@@ -45,6 +46,7 @@ export default function HomepageManagerPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [previewSections, setPreviewSections] = useState<HomepageSection[]>([]);
+  const [showCodePreview, setShowCodePreview] = useState(false);
 
   useEffect(() => {
     loadSections();
@@ -182,25 +184,34 @@ export default function HomepageManagerPage() {
     try {
       setIsSaving(true);
       const fileContent = homepageAPI.generateHomepageContent(sections);
-      const enabledSectionIds = sections
-        .filter((s) => s.enabled)
-        .map((s) => s.id);
+      console.log("Generated content:", fileContent);
 
       const result = await homepageAPI.saveHomepage({
         content: fileContent,
         filePath: "app/page.tsx",
-        enabledSectionIds,
       });
 
       if (result.success) {
         setHasChanges(false);
-        toast.success(result.message);
+        toast.success(result.message, {
+          description:
+            "The homepage has been updated. The page will reload in 3 seconds to show the changes.",
+          duration: 5000,
+        });
+
+        // Reload the page to show updated content
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
       } else {
         throw new Error("Failed to save");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save homepage:", error);
-      toast.error("Failed to save homepage");
+      toast.error("Failed to save homepage", {
+        description: error.message || "Check console for details",
+        duration: 5000,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -245,13 +256,54 @@ export default function HomepageManagerPage() {
                       <Badge variant="secondary" className="mr-2 animate-pulse">
                         <span className="flex items-center gap-1">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          Live changes
+                          {sections.filter((s) => s.enabled).length} sections
+                          ready to save
                         </span>
                       </Badge>
                     )}
                     <Button variant="outline" onClick={resetToDefault}>
                       <RotateCcw className="h-4 w-4 mr-2" />
                       Reset
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCodePreview(!showCodePreview)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Preview Code
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const result = await homepageAPI.testSave();
+                          if (result.success) {
+                            toast.success(`Test file saved: ${result.path}`);
+                          }
+                        } catch (error) {
+                          toast.error("Test save failed");
+                          console.error("Test save error:", error);
+                        }
+                      }}
+                    >
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Test Save
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const debug = await homepageAPI.debugPaths();
+                          console.log("Debug paths:", debug);
+                          toast.success("Debug info logged to console");
+                        } catch (error) {
+                          toast.error("Debug failed");
+                          console.error("Debug error:", error);
+                        }
+                      }}
+                    >
+                      <Bug className="h-4 w-4 mr-2" />
+                      Debug Paths
                     </Button>
                     <Button
                       onClick={saveToFile}
@@ -417,6 +469,60 @@ export default function HomepageManagerPage() {
 
                 <TabsContent value="preview">
                   <HomepagePreview sections={previewSections} />
+
+                  {showCodePreview && (
+                    <div className="mt-8 space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">
+                          Sections to be saved:
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {sections
+                            .filter((s) => s.enabled)
+                            .sort((a, b) => a.order - b.order)
+                            .map((section) => (
+                              <Card key={section.id} className="p-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge variant="outline">
+                                    {section.order + 1}
+                                  </Badge>
+                                  <h4 className="font-medium">
+                                    {section.name}
+                                  </h4>
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {section.component}
+                                </p>
+                                {Object.keys(section.config || {}).length >
+                                  0 && (
+                                  <div className="mt-2">
+                                    <p className="text-xs text-muted-foreground">
+                                      Config:{" "}
+                                      {Object.keys(section.config || {}).join(
+                                        ", "
+                                      )}
+                                    </p>
+                                  </div>
+                                )}
+                              </Card>
+                            ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">
+                          Generated Code Preview:
+                        </h3>
+                        <div className="bg-muted p-4 rounded-lg">
+                          <pre className="text-sm overflow-x-auto">
+                            <code>
+                              {homepageAPI.generateHomepageContent(sections)}
+                            </code>
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>

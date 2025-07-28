@@ -172,6 +172,22 @@ export class HomepageAPI {
     });
   }
 
+  static async testSave(): Promise<{ success: boolean; message: string; path: string }> {
+    return apiClient.request(`${this.baseUrl}/test-save`, {
+      method: 'POST'
+    });
+  }
+
+  static async debugPaths(): Promise<{ 
+    __dirname: string; 
+    projectRoot: string; 
+    targetPath: string;
+    dirExists: boolean;
+    canWrite: boolean;
+  }> {
+    return apiClient.request(`${this.baseUrl}/debug-paths`);
+  }
+
   static generateHomepageContent(sections: HomepageSection[]): string {
     const enabledSections = sections
       .filter(s => s.enabled)
@@ -186,7 +202,23 @@ export class HomepageAPI {
       .join("\n");
 
     const sectionComponents = enabledSections
-      .map(section => `        <${section.component} />`)
+      .map(section => {
+        const configProps = Object.entries(section.config || {})
+          .map(([key, value]) => {
+            if (typeof value === 'string') {
+              return `          ${key}="${value}"`;
+            } else if (typeof value === 'boolean') {
+              return `          ${key}={${value}}`;
+            } else if (typeof value === 'number') {
+              return `          ${key}={${value}}`;
+            } else {
+              return `          ${key}={${JSON.stringify(value)}}`;
+            }
+          })
+          .join("\n");
+
+        return `        <${section.component}${configProps ? `\n${configProps}` : ''} />`;
+      })
       .join("\n");
 
     return `import { Navbar } from "@/components/layout/navbar"
