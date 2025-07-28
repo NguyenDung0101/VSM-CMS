@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  avatar    String?
+  role      Role     @default(USER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  posts            Post[]
+  events           Event[]
+  eventRegistrations EventRegistration[]
+  uploads          Upload[]
+
+  @@map("users")
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String   @db.Text
+  content     String   @db.LongText
+  thumbnail   String?
+  tags        String?  // JSON array as string
+  published   Boolean  @default(false)
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+model Event {
+  id               String    @id @default(cuid())
+  title            String
+  slug             String    @unique
+  description      String    @db.Text
+  content          String?   @db.LongText
+  image            String?
+  date             DateTime
+  location         String
+  maxParticipants  Int
+  distance         String?
+  category         EventCategory @default(FUN_RUN)
+  status           EventStatus   @default(UPCOMING)
+  registrationFee  Decimal?      @db.Decimal(10, 2)
+  requirements     String?       @db.Text
+  schedule         String?       @db.Text // JSON string
+  contactInfo      String?       @db.Text // JSON string
+  published        Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  registrations EventRegistration[]
+
+  @@map("events")
+}
+
+model EventRegistration {
+  id                String   @id @default(cuid())
+  fullName          String
+  email             String
+  phone             String
+  emergencyContact  String
+  medicalConditions String?  @db.Text
+  experience        ExperienceLevel @default(BEGINNER)
+  status            RegistrationStatus @default(PENDING)
+  registeredAt      DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  userId String?
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([eventId, email])
+  @@map("event_registrations")
+}
+
+model Upload {
+  id           String   @id @default(cuid())
+  filename     String
+  originalName String
+  path         String
+  folder       String   @default("general")
+  size         Int
+  mimeType     String
+  uploadedAt   DateTime @default(now())
+
+  // Relations
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@map("uploads")
+}
+
+enum Role {
+  USER
+  EDITOR
+  ADMIN
+}
+
+enum EventCategory {
+  MARATHON
+  FUN_RUN
+  TRAIL_RUN
+  NIGHT_RUN
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  WAITLIST
+}
