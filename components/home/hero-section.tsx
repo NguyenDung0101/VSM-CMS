@@ -6,13 +6,31 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-export function HeroSection() {
+interface HeroSectionProps {
+  title?: string;
+  subtitle?: string;
+  backgroundImage?: string;
+  primaryButtonText?: string;
+  secondaryButtonText?: string;
+  showAnimations?: boolean;
+  [key: string]: any;
+}
+
+export function HeroSection({
+  title = "CHUNG KẾT VIETNAM STUDENT MARATHON 2025",
+  subtitle = "Chạy chung kết Việt tương lai 2025",
+  backgroundImage = "/img/image1.jpg",
+  primaryButtonText = "Tham gia sự kiện",
+  secondaryButtonText = "Xem video",
+  showAnimations = true,
+  ...props
+}: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
       {/* Background Image + Overlay */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/img/image1.jpg"
+          src={backgroundImage}
           alt="VSM Hero Background"
           fill
           className="object-cover brightness-75"
@@ -54,60 +72,59 @@ export function HeroSection() {
         >
           <motion.h1
             className="flex flex-col md:leading-tight text-5xl md:text-6xl font-extrabold mb-6 mt-20  tracking-tight"
-            initial={{ opacity: 0, y: 30 }}
+            initial={
+              showAnimations ? { opacity: 0, y: 30 } : { opacity: 1, y: 0 }
+            }
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            CHUNG KẾT
-            <span>VIETNAM STUDENT MARATHON 2025</span>
+            {title.split(" ").slice(0, 2).join(" ")}
+            <span>{title.split(" ").slice(2, -3).join(" ")}</span>
             <span className="bg-gradient-to-r block gradient-text bg-clip-text text-transparent drop-shadow-lg">
-              CHẠY VÌ TƯƠNG LAI
+              {title.split(" ").slice(-3).join(" ")}
             </span>
           </motion.h1>
 
           <motion.p
             className="text-lg md:text-2xl mb-10 text-gray-300 max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
+            initial={
+              showAnimations ? { opacity: 0, y: 30 } : { opacity: 1, y: 0 }
+            }
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            NGÀY THI ĐẤU: <strong className="text-white">28/12/2025</strong>
-          </motion.p>
-          <motion.p
-            className="text-lg md:text-2xl mb-10 text-gray-300 max-w-2xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            ĐỊA ĐIỂM :{" "}
-            <strong className="text-white">
-              KHU ĐÔ THỊ SALA, TP.THỦ ĐỨC, TP.HCM
-            </strong>
+            {subtitle}
           </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl w-fit mx-auto"
-          >
-            <p className="text-base text-gray-800 mb-2 font-semibold">
-              Đơn vị tổ chức
-            </p>
-            <div className="flex justify-center items-center">
-              <Image
-                src="/img/logo-vsm.png"
-                alt="VNExpress"
-                width={100}
-                height={50}
-                className="object-contain"
-              />
-            </div>
-          </motion.div>
+          {props.showOrganizer !== false && (
+            <motion.div
+              initial={
+                showAnimations ? { opacity: 0, y: 20 } : { opacity: 1, y: 0 }
+              }
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+              className="bg-white/90 backdrop-blur-md p-4 rounded-xl shadow-xl w-fit mx-auto"
+            >
+              <p className="text-base text-gray-800 mb-2 font-semibold">
+                Đơn vị tổ chức
+              </p>
+              <div className="flex justify-center items-center">
+                <Image
+                  src="/img/logo-vsm.png"
+                  alt="VNExpress"
+                  width={100}
+                  height={50}
+                  className="object-contain"
+                />
+              </div>
+            </motion.div>
+          )}
 
           <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-6"
-            initial={{ opacity: 0, y: 30 }}
+            initial={
+              showAnimations ? { opacity: 0, y: 30 } : { opacity: 1, y: 0 }
+            }
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
           >
@@ -117,10 +134,20 @@ export function HeroSection() {
               asChild
             >
               <Link href="/events">
-                Tham gia sự kiện
+                {primaryButtonText}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
+            {secondaryButtonText && (
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-white border-white hover:bg-white hover:text-black px-8 py-3 text-lg shadow-lg"
+                asChild
+              >
+                <Link href="/video">{secondaryButtonText}</Link>
+              </Button>
+            )}
           </motion.div>
         </motion.div>
 

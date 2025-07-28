@@ -6,7 +6,19 @@ import { Volume2, VolumeX } from "lucide-react";
 
 const YOUTUBE_ID = "4EGVAQYuqsU";
 
-export function GallerySection() {
+interface GallerySectionProps {
+  title?: string;
+  autoPlay?: boolean;
+  showControls?: boolean;
+  [key: string]: any;
+}
+
+export function GallerySection({
+  title = "Khoảnh khắc đáng nhớ",
+  autoPlay = false,
+  showControls = true,
+  ...props
+}: GallerySectionProps) {
   const [muted, setMuted] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -76,8 +88,7 @@ export function GallerySection() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold flex items-center justify-center gap-2 flex-col">
-            VIETNAM STUDENT MARATHON{" "}
-            <span className="gradient-text">RUN TO LAMPAS 2024</span>
+            {title}
           </h2>
         </motion.div>
 

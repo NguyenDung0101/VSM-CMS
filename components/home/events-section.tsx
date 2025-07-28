@@ -21,7 +21,21 @@ interface Event {
   status: "upcoming" | "ongoing" | "completed";
 }
 
-export function EventsSection() {
+interface EventsSectionProps {
+  title?: string;
+  description?: string;
+  backgroundColor?: string;
+  showViewAllButton?: boolean;
+  [key: string]: any;
+}
+
+export function EventsSection({
+  title = "Sự kiện sắp tới",
+  description = "Tham gia các sự kiện chạy bộ hấp dẫn được tổ chức bởi VSM. Cùng nhau tạo nên những kỷ niệm đáng nhớ!",
+  backgroundColor = "bg-muted/20",
+  showViewAllButton = true,
+  ...props
+}: EventsSectionProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [events, setEvents] = useState<Event[]>([]);
@@ -96,7 +110,7 @@ export function EventsSection() {
   };
 
   return (
-    <section ref={ref} className="py-20 bg-muted/20">
+    <section ref={ref} className={`py-20 ${backgroundColor}`}>
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -104,12 +118,9 @@ export function EventsSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Sự kiện <span className="gradient-text">sắp tới</span>
-          </h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">{title}</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Tham gia các sự kiện chạy bộ hấp dẫn được tổ chức bởi VSM. Cùng nhau
-            tạo nên những kỷ niệm đáng nhớ!
+            {description}
           </p>
         </motion.div>
 
@@ -186,19 +197,21 @@ export function EventsSection() {
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="text-center"
-        >
-          <Button size="lg" variant="outline" asChild>
-            <Link href="/events">
-              Xem tất cả sự kiện
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
-        </motion.div>
+        {showViewAllButton && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            className="text-center"
+          >
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/events">
+                Xem tất cả sự kiện
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </Button>
+          </motion.div>
+        )}
       </div>
     </section>
   );

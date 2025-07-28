@@ -38,12 +38,26 @@ const members: Member[] = [
   },
 ];
 
-export function TeamSection() {
+interface TeamSectionProps {
+  title?: string;
+  description?: string;
+  backgroundColor?: string;
+  membersPerRow?: number;
+  [key: string]: any;
+}
+
+export function TeamSection({
+  title = "Đội ngũ VSM",
+  description = "Gặp gỡ những gương mặt tiêu biểu đồng hành cùng chúng tôi.",
+  backgroundColor = "bg-muted/20",
+  membersPerRow = 4,
+  ...props
+}: TeamSectionProps) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="py-20 bg-muted/20">
+    <section ref={ref} className={`py-20 ${backgroundColor}`}>
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -51,16 +65,13 @@ export function TeamSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            CỰ LY <span className="gradient-text">ĐĂNG KÝ</span>
-          </h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">{title}</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Lựa chọn hành trình phù hợp với bạn – mỗi bước chạy là một thử thách
-            để vượt lên chính mình!
+            {description}
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className={`grid grid-cols-2 md:grid-cols-${membersPerRow} gap-8`}>
           {members.map((m, idx) => (
             <motion.div
               key={m.id}
